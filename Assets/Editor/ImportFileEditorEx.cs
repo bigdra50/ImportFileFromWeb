@@ -1,5 +1,4 @@
-﻿using ImportFileFromGitHub;
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEngine;
 
 namespace Editor
@@ -28,7 +27,6 @@ namespace Editor
 
             if (GUILayout.Button("Import"))
             {
-                Debug.Log("Start Import");
                 var import = new ImportFileFromWeb();
                 import.StartImportAsync(_url);
                 _url = "";
