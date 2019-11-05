@@ -31,11 +31,12 @@ namespace Editor
                 Debug.Log("Start Import");
                 var import = new ImportFileFromWeb();
                 import.StartImportAsync(_url);
+                _url = "";
             }
 
-            if (GUILayout.RepeatButton("Repeat"))
+            if (GUILayout.Button("Reset"))
             {
-                Debug.Log("Repeat");
+                _url = "";
             }
 
         }
