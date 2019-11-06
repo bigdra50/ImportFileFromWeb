@@ -16,6 +16,8 @@ public class ImportFileFromWeb
 
     // For Debug
     private string _githubPath = "https://raw.githubusercontent.com";
+    private string _gitHubHost = "raw.githubusercontent.com";
+    private string _shaderToyPath = "www.shadertoy.com";
     private string _userName = "bigdra50";
     private string _filePath = "Shaders/master/ShaderLab/ATField.shader/";
 
@@ -26,7 +28,9 @@ public class ImportFileFromWeb
         {
             var srcPath = GetRawSourcePath(uriStr);
             if (srcPath == null) return;
+            Debug.Log(srcPath);
             var src = await GetRawSourceAsync(srcPath);
+            Debug.Log(src);
             var importFile = new ImportedFile(srcPath.ToString(), src);
             Import(importFile);
         }
@@ -46,7 +50,7 @@ public class ImportFileFromWeb
         }
         catch (Exception e)
         {
-            throw e;
+            throw (e);
             return null;
         }
         // uriの形式をいい感じにフォーマットする
@@ -62,6 +66,23 @@ public class ImportFileFromWeb
         if (req.isHttpError || req.isNetworkError)
         {
             throw new Exception(req.error);
+        }
+        
+        if (req.uri.Host == _githubPath)
+        {
+            // githubからならrawfileがとれてるはず
+        }else if (req.uri.Host == _shaderToyPath)
+        {
+            // shader toyからはjsonがくる
+            Debug.Log("ShaderToy");
+            var importedFile = new ImportedFile("name", "src");
+            var shaderToyData = JsonUtility.FromJson<ShaderToyData>(req.downloadHandler.text);
+            
+            Debug.Log("Serialized Json");
+            Debug.Log(shaderToyData.Shader.ver);
+            Debug.Log(shaderToyData.Shader.info.name);
+            Debug.Log(shaderToyData.Shader.renderpass[0].code);
+            
         }
 
         return req.downloadHandler.text;
@@ -134,3 +155,37 @@ public class ImportedFile
         other,
     }
 }
+
+[Serializable]
+public struct ShaderToyData
+{
+    public ShaderData Shader;
+    
+    [Serializable]
+    public struct ShaderData
+    {
+        public float ver;
+        public Info info;
+        public RenderPass[] renderpass;
+        
+        [Serializable]
+        public struct Info
+        {
+            public string id;
+            public string name;
+            public string username;
+            public string description;
+        }
+        
+        [Serializable]
+        public struct RenderPass
+        {
+            public string code;
+        }
+    }
+}
+
+
+
+
+
