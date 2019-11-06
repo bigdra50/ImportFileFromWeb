@@ -19,33 +19,43 @@ public class ImportFileFromWeb
     private string _userName = "bigdra50";
     private string _filePath = "Shaders/master/ShaderLab/ATField.shader/";
 
-    public async void StartImportAsync(string srcUri)
+    public async void StartImportAsync(string uriStr)
     {
-        var importFile = new ImportedFile();
+        //var importFile = new ImportedFile();
         try
         {
-            var srcPath = GetRawSourcePath(srcUri);
-            if (string.IsNullOrEmpty(srcPath)) return;
+            var srcPath = GetRawSourcePath(uriStr);
+            if (srcPath == null) return;
             var src = await GetRawSourceAsync(srcPath);
-            importFile = new ImportedFile(srcPath, src);
+            var importFile = new ImportedFile(srcPath.ToString(), src);
+            Import(importFile);
         }
         catch (Exception e)
         {
             Debug.LogException(e);
         }
 
-        Import(importFile);
     }
 
-    string GetRawSourcePath(string uri)
+    Uri GetRawSourcePath(string uriStr)
     {
+        Uri uri;
+        try
+        {
+            uri = new Uri(uriStr.TrimEnd(' ', '/'));
+        }
+        catch (Exception e)
+        {
+            throw e;
+            return null;
+        }
         // uriの形式をいい感じにフォーマットする
-
-        uri = uri.TrimEnd(' ', '/');
+        var fmt = new URLFormatter();
+        uri = fmt.Format(uri);
         return uri;
     }
 
-    async UniTask<string> GetRawSourceAsync(string uri)
+    async UniTask<string> GetRawSourceAsync(Uri uri)
     {
         var req = UnityWebRequest.Get(uri);
         await req.SendWebRequest();
@@ -99,7 +109,7 @@ public class ImportFileFromWeb
     }
 }
 
-public struct ImportedFile
+public class ImportedFile
 {
     private readonly string name;
     private readonly string src;
