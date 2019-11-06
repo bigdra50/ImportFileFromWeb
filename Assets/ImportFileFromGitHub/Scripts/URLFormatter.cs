@@ -17,6 +17,9 @@ public class URLFormatter
 
     public Uri Format(Uri uri)
     {
+        
+        #region GitHub
+        // github.comのリンクからrawファイルのリンクへ変換
         if (uri.Host == _rawGitHubHost)
         {
             return uri;
@@ -35,7 +38,9 @@ public class URLFormatter
             }
             uri = new Uri(builder.ToString().TrimEnd('/'));
         }
-        Debug.Log(uri);
+        #endregion
+        
+       // Debug.Log(uri);
 
         return uri;
     }
