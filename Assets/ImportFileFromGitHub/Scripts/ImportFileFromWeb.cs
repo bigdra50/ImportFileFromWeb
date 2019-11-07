@@ -148,7 +148,7 @@ public class ImportFile
     public ImportFile(string name, string src)
     {
         // nameに拡張子が含まれてるやつ
-        this.name = name;
+        this.name = name.Replace(" ", "");
         this.src = src;
         var extension = Path.GetExtension(name).TrimStart('.');
         this.ext = extension == "cs" ? Extension.cs : extension == "shader" ? Extension.shader : Extension.other;
@@ -159,7 +159,7 @@ public class ImportFile
         // nameには拡張子なし
         this.src = src;
         this.ext = ext;
-        this.name = name + "." + ext.ToString();
+        this.name = name.Replace(" ", "") + "." + ext.ToString();
     }
 
     public enum Extension
