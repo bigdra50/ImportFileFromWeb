@@ -112,14 +112,14 @@ mat2 rot(float th) { return mat2(cos(th), -sin(th), sin(th), cos(th)); }
 	vec3 pixel = blue;
 	pixel = mix(pixel, light, maskGS);
 	pixel = mix(pixel, light, maskSS);
-	pixel -= 0.1*maskStripes;	
+	pixel -= mul(0.1,maskStripes);	
 	pixel = mix(pixel, green, maskG);
-	pixel = mix(pixel, pink, maskL1*circ);
+	pixel = mix(pixel, pink, mul(maskL1,circ));
 	pixel = mix(pixel, green, maskS);
 	pixel = mix(pixel, pink, maskL2*(1.-circ));
 	
-	float dirt = pow(texture(iChannel0, 4.0*r).x, 4.0);
-	pixel -= (0.2*dirt - 0.1)*(maskG+maskS); // dirt
+	float dirt = pow(texture(iChannel0, mul(4.0,r)).x, 4.0);
+	pixel -= mul((0.2*dirt - 0.1),(maskG+maskS)); // dirt
 	pixel -= smoothstep(0.45, 2.5, length(r));
 	fragColor = vec4(pixel, 1.0); 
                 return col;

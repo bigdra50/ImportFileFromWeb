@@ -28,7 +28,7 @@ public class ImportFileFromWeb
         {
             var srcPath = GetRawSourcePath(uriStr);
             if (srcPath == null) return;
-            Debug.Log(srcPath);
+            //Debug.Log(srcPath);
             var importFile = await GetRawSourceAsync(srcPath);
             //var importFile = new ImportFile(Path.GetFileName(srcPath.ToString()), src);
             Import(importFile);
@@ -69,21 +69,22 @@ public class ImportFileFromWeb
             throw new Exception(req.error);
         }
         
-        if (req.uri.Host == _githubPath)
+        if (req.uri.Host == _gitHubHost)
         {
+            Debug.Log(Path.GetFileName(req.uri.AbsolutePath));
             // githubからならraw fileがとれてるはず
             return new ImportFile(Path.GetFileName(req.uri.AbsolutePath), req.downloadHandler.text);
         }else if (req.uri.Host == _shaderToyPath)
         {
             // shader toyからはjsonがくる
-            Debug.Log("ShaderToy");
+            //Debug.Log("ShaderToy");
             var importedFile = new ImportFile("name", "src");
             var shaderToyData = JsonUtility.FromJson<ShaderToyData>(req.downloadHandler.text);
             
-            Debug.Log("Serialized Json");
-            Debug.Log(shaderToyData.Shader.ver);
-            Debug.Log(shaderToyData.Shader.info.name);
-            Debug.Log(shaderToyData.Shader.renderpass[0].code);
+            //Debug.Log("Serialized Json");
+            //Debug.Log(shaderToyData.Shader.ver);
+            //Debug.Log(shaderToyData.Shader.info.name);
+            //Debug.Log(shaderToyData.Shader.renderpass[0].code);
 
             src = shaderToyData.Shader.renderpass[0].code;
             return new ImportFile(shaderToyData.Shader.info.name, shaderToyData.Shader.renderpass[0].code, ImportFile.Extension.glsl);
