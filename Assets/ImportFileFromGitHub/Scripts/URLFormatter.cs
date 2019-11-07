@@ -18,6 +18,7 @@ public class URLFormatter
     public Uri Format(Uri uri)
     {
         
+        // TODO: Gistへ対応させる
         Debug.Log($"Start Format : {uri}");
         #region GitHub
         // github.comのリンクからrawファイルのリンクへ変換
