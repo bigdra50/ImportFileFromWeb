@@ -16,6 +16,8 @@ public class ImportFileFromWeb
 
     // For Debug
     private string _githubPath = "https://raw.githubusercontent.com";
+    private string _gitHubHost = "raw.githubusercontent.com";
+    private string _shaderToyPath = "www.shadertoy.com";
     private string _userName = "bigdra50";
     private string _filePath = "Shaders/master/ShaderLab/ATField.shader/";
 
@@ -26,8 +28,9 @@ public class ImportFileFromWeb
         {
             var srcPath = GetRawSourcePath(uriStr);
             if (srcPath == null) return;
-            var src = await GetRawSourceAsync(srcPath);
-            var importFile = new ImportedFile(srcPath.ToString(), src);
+            Debug.Log(srcPath);
+            var importFile = await GetRawSourceAsync(srcPath);
+            //var importFile = new ImportFile(Path.GetFileName(srcPath.ToString()), src);
             Import(importFile);
         }
         catch (Exception e)
@@ -46,7 +49,7 @@ public class ImportFileFromWeb
         }
         catch (Exception e)
         {
-            throw e;
+            throw (e);
             return null;
         }
         // uriの形式をいい感じにフォーマットする
@@ -55,38 +58,61 @@ public class ImportFileFromWeb
         return uri;
     }
 
-    async UniTask<string> GetRawSourceAsync(Uri uri)
+    async UniTask<ImportFile> GetRawSourceAsync(Uri uri)
     {
+        var name = "";
+        var src = "";
         var req = UnityWebRequest.Get(uri);
         await req.SendWebRequest();
         if (req.isHttpError || req.isNetworkError)
         {
             throw new Exception(req.error);
         }
+        
+        if (req.uri.Host == _githubPath)
+        {
+            // githubからならraw fileがとれてるはず
+            return new ImportFile(Path.GetFileName(req.uri.AbsolutePath), req.downloadHandler.text);
+        }else if (req.uri.Host == _shaderToyPath)
+        {
+            // shader toyからはjsonがくる
+            Debug.Log("ShaderToy");
+            var importedFile = new ImportFile("name", "src");
+            var shaderToyData = JsonUtility.FromJson<ShaderToyData>(req.downloadHandler.text);
+            
+            Debug.Log("Serialized Json");
+            Debug.Log(shaderToyData.Shader.ver);
+            Debug.Log(shaderToyData.Shader.info.name);
+            Debug.Log(shaderToyData.Shader.renderpass[0].code);
 
-        return req.downloadHandler.text;
+            src = shaderToyData.Shader.renderpass[0].code;
+            return new ImportFile(shaderToyData.Shader.info.name, shaderToyData.Shader.renderpass[0].code, ImportFile.Extension.glsl);
+        }
+
+        return new ImportFile(name, src);
     }
 
-    void Import(ImportedFile importedFile)
+    
+    void Import(ImportFile importFile)
     {
 
         var dirPath = Path.Combine(Application.dataPath, @"Resources\PlayGround\");
         var filePath = "";
         //print(i.Src);
-        if (importedFile.Ext == ImportedFile.Extension.cs)
+        if (importFile.Ext == ImportFile.Extension.cs)
         {
             dirPath = Path.Combine(dirPath, @"Scripts\");
-            filePath = Path.Combine(dirPath, importedFile.Name);
+            filePath = Path.Combine(dirPath, importFile.Name);
         }
-        else if (importedFile.Ext == ImportedFile.Extension.shader)
+        else if (importFile.Ext == ImportFile.Extension.shader)
         {
             dirPath = Path.Combine(dirPath, @"Shader\");
-            filePath = Path.Combine(dirPath, importedFile.Name);
+            filePath = Path.Combine(dirPath, importFile.Name);
         }
         else
         {
             dirPath = Path.Combine(dirPath, @"Text\");
-            filePath = Path.Combine(dirPath, importedFile.Name);
+            filePath = Path.Combine(dirPath, importFile.Name);
 
         }
 
@@ -95,7 +121,7 @@ public class ImportFileFromWeb
             Directory.CreateDirectory(dirPath);
             using (var writer = new StreamWriter(filePath, false))
             {
-                writer.Write(importedFile.Src);
+                writer.Write(importFile.Src);
                 writer.Flush();
                 writer.Close();
                 //File.WriteAllText(filePath, i.Src);
@@ -109,7 +135,7 @@ public class ImportFileFromWeb
     }
 }
 
-public class ImportedFile
+public class ImportFile
 {
     private readonly string name;
     private readonly string src;
@@ -119,18 +145,62 @@ public class ImportedFile
     public string Src => src;
     public Extension Ext => ext;
 
-    public ImportedFile(string path, string src)
+    public ImportFile(string name, string src)
     {
-        this.name = Path.GetFileName(path);
+        // nameに拡張子が含まれてるやつ
+        this.name = name.Replace(" ", "");
         this.src = src;
         var extension = Path.GetExtension(name).TrimStart('.');
         this.ext = extension == "cs" ? Extension.cs : extension == "shader" ? Extension.shader : Extension.other;
+    }
+
+    public ImportFile(string name, string src, Extension ext)
+    {
+        // nameには拡張子なし
+        this.src = src;
+        this.ext = ext;
+        this.name = name.Replace(" ", "") + "." + ext.ToString();
     }
 
     public enum Extension
     {
         cs,
         shader,
+        glsl,
         other,
     }
 }
+
+[Serializable]
+public struct ShaderToyData
+{
+    public ShaderData Shader;
+    
+    [Serializable]
+    public struct ShaderData
+    {
+        public float ver;
+        public Info info;
+        public RenderPass[] renderpass;
+        
+        [Serializable]
+        public struct Info
+        {
+            public string id;
+            public string name;
+            public string username;
+            public string description;
+        }
+        
+        [Serializable]
+        public struct RenderPass
+        {
+            public string code;
+        }
+    }
+}
+
+
+
+
+

@@ -29,7 +29,7 @@ namespace Editor
             {
                 var import = new ImportFileFromWeb();
                 import.StartImportAsync(_url);
-                _url = "";
+                //_url = "";
             }
 
             if (GUILayout.Button("Reset"))
