@@ -7,7 +7,7 @@ using UnityEngine.TestTools;
 
 namespace Tests
 {
-    public class GLSL2HLSLTest
+    public class GLSL2HLSLReplaceTest
     {
         private List<string> _testLine = new List<string>()
         {
@@ -22,7 +22,7 @@ namespace Tests
         [Test]
         public void GLSL2HLSLTestSimplePasses()
         {
-            var converter = new Converter();
+            var converter = new Converter("test.shader");
             converter.Start();
         }
 
