@@ -1,26 +1,13 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using UnityEngine;
 
 public class Converter
 {
     private string _glslFilePath = Path.Combine(Application.dataPath, "GLSL2ShaderLab", "Shader", "PietMondrianPaint.glsl");
-    public void Start()
-    {
-        if (File.Exists(_glslFilePath))
-        {
-            using (var reader = new StreamReader(_glslFilePath, Encoding.UTF8))
-            {
-                while (!reader.EndOfStream)
-                {
-                    var line = reader.ReadLine();
-                    Debug.Log(line);
-                }
-            }
-        }
-    }
     
     Dictionary<string, string> _glslHlslDic = new Dictionary<string, string>()
     {
@@ -62,4 +49,38 @@ public class Converter
         {"iChannel1", "_iChannel1"},
         {"iChannel2", "_iChannel2"},
     };
+    
+    public void Start()
+    {
+        var hlslLine = File.ReadLines(_glslFilePath, Encoding.UTF8)
+            .Select(s => s = ReplaceGlsl2Hlsl(s));
+        
+        foreach (var l in hlslLine)
+        {
+            Debug.Log(l);
+        }
+        
+        // if (File.Exists(_glslFilePath))
+        // {
+        //     using (var reader = new StreamReader(_glslFilePath, Encoding.UTF8))
+        //     {
+        //         while (!reader.EndOfStream)
+        //         {
+        //             var glslLine = reader.ReadLine();
+        //             var hlslLine = ReplaceGlsl2Hlsl(glslLine);
+        //         }
+        //     }
+        // }
+    }
+
+    public string ReplaceGlsl2Hlsl(string glslLine)
+    {
+        var hlslLine = string.Empty;
+        // TODO: とりあえずdicから置き換えるだけのを実装
+        
+        
+        
+        return hlslLine;
+    }
+    
 }
